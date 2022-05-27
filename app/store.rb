@@ -46,12 +46,18 @@ class Store
   end
 
   def remove(posX, posY)
-    @crates.each do |crate|
-      if crate[0] == posX.to_i && crate[1] == posY.to_i
-        return _remove(crate)
+    posX = posX.to_i
+    posY = posY.to_i
+    if product_code = @warehousearray[posY][posX]
+      @crates.delete_if { |c| c[0] == posX && c[1] == posY }
+      @warehousearray[posY][posX] = '-'
+      products_to_remove = locate(product_code)
+      products_to_remove.each do |p|
+        @warehousearray[p[0]][p[1]] = '-'
       end
+    else
+      raise "No crate in position #{posX}, #{posY}"
     end
-    raise "No crate in position #{posX}, #{posY}"
   end
 
   def view
@@ -61,15 +67,6 @@ class Store
   end
 
   private
-
-  def _remove(crate)
-    crate = posX, posY, width, height, product_code
-
-    on_iterate(posX, posY, width, height) do |_posx, _posy|
-      @warehousearray[_posy][_posx] = '-'
-    end
-    @crates.delete_at(@crates.index(crate))
-  end
 
   def on_iterate(posX, posY, width, height)
     (posY..posY+height-1).each do |_posy|
